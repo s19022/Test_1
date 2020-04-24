@@ -13,11 +13,15 @@ namespace Test_1.Controllers
     [ApiController]
     public class TeamsController : ControllerBase
     {
-        public readonly ITeamsDbService service;
+        public readonly ITeamsDbService teamService;
 
-        public TeamsController(ITeamsDbService _service)
+        public readonly IProjectServiceDb projectService;
+
+        public TeamsController(ITeamsDbService _service, IProjectServiceDb _projectService)
         {
-            service = _service;
+            teamService = _service;
+            projectService = _projectService;
+
         }
 
         [HttpGet("{id}")]
@@ -25,13 +29,19 @@ namespace Test_1.Controllers
         {
             try
             {
-                var teamMember = service.GetTeamMember(id);
+                var teamMember = teamService.GetTeamMember(id);
                 return Ok(teamMember);
             }
             catch (NoSuchTeamMemberException ex)
             {
                 return BadRequest("No member with id: " + id);
             }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteProject(int id)
+        {
+            return Ok(id);
         }
     }
 }

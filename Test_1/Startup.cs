@@ -27,6 +27,8 @@ namespace Test_1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<ITeamsDbService, MsSqlTeamDbService>();
+            services.AddTransient<IProjectServiceDb, MsSqlProjectServiceDb>();
+
             services.AddControllers();
         }
 
