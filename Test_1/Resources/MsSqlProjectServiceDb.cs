@@ -17,34 +17,44 @@ namespace Test_1.Resources
             using (var connection = new SqlConnection(connectionString))
             using (var command = new SqlCommand())
             {
-                if (!CheckProject(request.id)) throw new NoSuchProjectException();
+                if (!CheckProject(request.id, connection)) throw new NoSuchProjectException();
 
                 var taskId = GetTaskId(request.id);
 
                 var tran = connection.BeginTransaction();
+
                 command.CommandText = "delete from project where idProject = @id";
                 command.Parameters.AddWithValue("id", request.id);
 
-                foreach (int item in taskId)
-                {
-                    command.CommandText = "delete from task where idTask = @id";
-                    command.Parameters.AddWithValue("id", item);
-                }
+                DeleteTask(taskId);
+
                 tran.Commit();
             }
         }
 
-        private bool CheckProject(int id)
+        private bool CheckProject(int id, SqlConnection connection)
         {
-            using (var connection = new SqlConnection(connectionString))
             using (var command = new SqlCommand())
             {
                 command.Connection = connection;
-                command.CommandText = "select idTask from task where idProject = @id";
+                command.CommandText = "select 1 from task where idProject = @id";
                 command.Parameters.AddWithValue("id", id);
 
                 return command.ExecuteReader().Read();
 
+            }
+        }
+
+        private void DeleteTask(List<int> taskId)
+        {
+            foreach (int item in taskId)
+            {
+                using (var connection = new SqlConnection(connectionString))
+                using (var command = new SqlCommand())
+                {
+                    command.CommandText = "delete from task where idTask = @id";
+                    command.Parameters.AddWithValue("id", item);
+                }
             }
         }
 
