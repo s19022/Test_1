@@ -8,6 +8,6 @@ namespace Test_1.Resources
 {
     public interface IProjectServiceDb
     {
-        public void DeleteProject(projectDeleteRequest request);
+        public void DeleteProject(ProjectDeleteRequest request);
     }
 }

@@ -12,24 +12,59 @@ namespace Test_1.Resources
     {
         private static string connectionString = "Data Source=db-mssql;Initial Catalog=s19022;Integrated Security=True";
 
-        public void DeleteProject(projectDeleteRequest request)
+        public void DeleteProject(ProjectDeleteRequest request)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            using (var command = new SqlCommand())
+            {
+                if (!CheckProject(request.id)) throw new NoSuchProjectException();
+
+                var taskId = GetTaskId(request.id);
+
+                var tran = connection.BeginTransaction();
+                command.CommandText = "delete from project where idProject = @id";
+                command.Parameters.AddWithValue("id", request.id);
+
+                foreach (int item in taskId)
+                {
+                    command.CommandText = "delete from task where idTask = @id";
+                    command.Parameters.AddWithValue("id", item);
+                }
+                tran.Commit();
+            }
+        }
+
+        private bool CheckProject(int id)
         {
             using (var connection = new SqlConnection(connectionString))
             using (var command = new SqlCommand())
             {
                 command.Connection = connection;
                 command.CommandText = "select idTask from task where idProject = @id";
-                command.Parameters.AddWithValue("id", request.id);
+                command.Parameters.AddWithValue("id", id);
 
-                var reader = command.ExecuteReader();
-                bool canRead = false;
-                var taskId = new List<int>();
-                while(reader.Read())
-                {
-                    canRead = true;
-                    taskId.Add((int)reader["idTask"]);
-                }
-                if (!canRead) throw new NoSuchProjectException();
+                return command.ExecuteReader().Read();
+
             }
         }
+
+        private List<int> GetTaskId(int id)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            using (var command = new SqlCommand())
+            {
+                command.Connection = connection;
+                command.CommandText = "select idTask from task where idProject = @id";
+                command.Parameters.AddWithValue("id", id);
+
+                var reader = command.ExecuteReader();
+                var taskId = new List<int>();
+                while (reader.Read())
+                {
+                    taskId.Add((int)reader["idTask"]);
+                }
+                return taskId;
+            }
+        }
+    }
 }

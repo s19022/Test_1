@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Test_1.DTO.Request
 {
-    public class projectDeleteRequest
+    public class ProjectDeleteRequest
     {
         public int id { get; set; }
     }

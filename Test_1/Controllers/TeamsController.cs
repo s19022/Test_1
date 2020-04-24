@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Test_1.DTO.Request;
 using Test_1.Exceptions;
 using Test_1.Resources;
 
@@ -38,10 +39,17 @@ namespace Test_1.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteProject(int id)
+        [HttpDelete("{projectId}")]
+        public IActionResult DeleteProject(int projectId)
         {
-            return Ok(id);
+            try
+            {
+                projectService.DeleteProject(new ProjectDeleteRequest{id = projectId});
+            }catch(NoSuchProjectException ex)
+            {
+                return BadRequest("No such project");
+            }
+            return Ok();
         }
     }
 }
