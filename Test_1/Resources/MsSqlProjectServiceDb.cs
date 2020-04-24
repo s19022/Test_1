@@ -14,42 +14,42 @@ namespace Test_1.Resources
 
         public void DeleteProject(ProjectDeleteRequest request)
         {
+           
+                if (!CheckProject(request.id)) throw new NoSuchProjectException();
+
+                var taskId = GetTaskId(request.id);
             using (var connection = new SqlConnection(connectionString))
             using (var command = new SqlCommand())
             {
-                if (!CheckProject(request.id, connection)) throw new NoSuchProjectException();
-
-                var taskId = GetTaskId(request.id);
-
                 var tran = connection.BeginTransaction();
 
                 command.CommandText = "delete from project where idProject = @id";
                 command.Parameters.AddWithValue("id", request.id);
 
-                DeleteTask(taskId);
+                DeleteTask(taskId, connection);
 
                 tran.Commit();
             }
         }
 
-        private bool CheckProject(int id, SqlConnection connection)
+        private bool CheckProject(int id)
         {
+            using (var connection = new SqlConnection(connectionString))
             using (var command = new SqlCommand())
             {
                 command.Connection = connection;
                 command.CommandText = "select 1 from task where idProject = @id";
                 command.Parameters.AddWithValue("id", id);
 
-                return command.ExecuteReader().Read();
-
+                bool res = command.ExecuteReader().Read();
+                return res;
             }
         }
 
-        private void DeleteTask(List<int> taskId)
+        private void DeleteTask(List<int> taskId, SqlConnection connection)
         {
             foreach (int item in taskId)
             {
-                using (var connection = new SqlConnection(connectionString))
                 using (var command = new SqlCommand())
                 {
                     command.CommandText = "delete from task where idTask = @id";
@@ -61,6 +61,7 @@ namespace Test_1.Resources
         private List<int> GetTaskId(int id)
         {
             using (var connection = new SqlConnection(connectionString))
+        
             using (var command = new SqlCommand())
             {
                 command.Connection = connection;
